@@ -1,8 +1,18 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { ROLES } = require("../types/roles");
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+const generateToken = (user) => {
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+      email: user.email,
+      tenantId: user.tenantId,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
 };
 
 const protect = async (req, res, next) => {
@@ -27,4 +37,13 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { generateToken, protect };
+const authorize = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+    next();
+  };
+};
+
+module.exports = { generateToken, protect, authorize };
