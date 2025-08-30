@@ -1,7 +1,6 @@
 # Project Name
 
-Short description about your project.
-
+Learnify this is project based on cources
 ---
 
 ## 🚀 Installation
