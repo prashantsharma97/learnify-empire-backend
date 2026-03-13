@@ -18,7 +18,7 @@ router.post("/login", loginUser);
 router.get("/admin/dashboard", protect, authorize(ROLES.ADMIN), (req, res) => {
   res.json({ message: "Welcome to Admin Dashboard" });
 });
-
+// all users routes
 router.get("/user", protect, getAllUsers);
 router.get("/user/:id", protect, getUser);
 router.put("/update/:id", protect, updateUser);
