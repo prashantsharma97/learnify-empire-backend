@@ -6,9 +6,12 @@ const { ROLES } = require('../types/roles');
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  phone: { type: String, required: true },
   password: { type: String, required: true },
   role: { type: String, enum: Object.values(ROLES), required: true },
   tenantId: { type: String, required: true, unique: true },
+  profileImage: { type: String, default: null }, 
+  bio: { type: String, default: null },
 });
 
 userSchema.pre("save", async function (next) {

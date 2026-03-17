@@ -3,8 +3,7 @@ const { generateToken } = require("../utils/authUtils");
 const { ROLES } = require("../types/roles");
 
 const registerUser = async (req, res) => {
-  const { username, email, password, confirmPassword, role, tenantId } =
-    req.body;
+  const { username, email, phone, password, confirmPassword, role, tenantId } = req.body;
   console.log(req.body, "body");
   if (password !== confirmPassword) {
     return res.status(400).json({ message: "Passwords do not match" });
@@ -22,6 +21,7 @@ const registerUser = async (req, res) => {
     const newUser = new User({
       username,
       email,
+      phone,
       password,
       role,
       tenantId,

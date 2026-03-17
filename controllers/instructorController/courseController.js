@@ -1,4 +1,6 @@
 const Course = require("../../models/Course");
+const User = require("../../models/User");
+const jwt = require("jsonwebtoken");
 
 const createCourse = async (req, res) => {
     const { title, description, category, difficultyLevel, thumbnail, lessons, pricingInfo } = req.body;
@@ -9,7 +11,7 @@ const createCourse = async (req, res) => {
             category,
             difficultyLevel,
             thumbnail,
-            lessons, 
+            lessons,
             pricingInfo
         });
 
@@ -77,5 +79,54 @@ const deleteCourse = async (req, res) => {
     }
 }
 
+const instructorDetails = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select("-password");
+        if (!user) return res.status(404).json({ message: "instructor not found" });
+        res.json({ message: "instructor details retrieved successfully", user });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
 
-module.exports = { createCourse, getCourses, getCourseById, updateCourse, deleteCourse };
+const updateInstructorDetails = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ message: "instructor not found" });
+        const { name, email, bio } = req.body;
+        console.log(req.body);
+        user.name = name || user.name;
+        user.email = email || user.email;
+        user.bio = bio || user.bio;
+        user.profileImage = req.file ? req.file.path : user.profileImage;
+        await user.save();
+        res.json({ message: "instructor details updated successfully", user: user.toObject({ getters: true, virtuals: false }) });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+const changePassword = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        const { currentPassword, newPassword } = req.body;
+        const isMatch = await user.comparePassword(currentPassword);
+        if (!isMatch) return res.status(400).json({ message: "Current password is incorrect" });
+        user.password = newPassword;
+        await user.save();
+        res.json({ message: "Password changed successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
+module.exports = { createCourse, getCourses, getCourseById, updateCourse, deleteCourse, instructorDetails, updateInstructorDetails, changePassword };
