@@ -97,14 +97,29 @@ const updateInstructorDetails = async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
         if (!user) return res.status(404).json({ message: "instructor not found" });
-        const { name, email, bio } = req.body;
-        console.log(req.body);
-        user.name = name || user.name;
+        const { username, email, bio } = req.body;
+        let profileImage = user.profileImage;
+        if (req.file) {
+            profileImage = req.file ? req.file.path.replace(/\\/g, "/") : null;
+        }
+        console.log("BODY:", req.body);
+        console.log("FILE:", req.file);
+        user.username = username || user.username;
         user.email = email || user.email;
         user.bio = bio || user.bio;
-        user.profileImage = req.file ? req.file.path : user.profileImage;
+        user.profileImage = profileImage;
+        console.log("Updated profileImage:", user.profileImage); 
         await user.save();
-        res.json({ message: "instructor details updated successfully", user: user.toObject({ getters: true, virtuals: false }) });
+
+        const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+        const userObj = user.toObject({ getters: true, virtuals: false });
+
+        if (userObj.profileImage) {
+            userObj.profileImage = `${baseUrl}/${userObj.profileImage}`;
+        }
+
+        res.json({ message: "instructor details updated successfully", user: userObj });
     } catch (err) {
         res.status(500).json({ message: "Server error" });
     }
@@ -117,7 +132,9 @@ const changePassword = async (req, res) => {
         const user = await User.findById(decoded.id);
         if (!user) return res.status(404).json({ message: "User not found" });
         const { currentPassword, newPassword } = req.body;
+        console.log("passwords:", currentPassword, newPassword);
         const isMatch = await user.comparePassword(currentPassword);
+        console.log("isMatch:", isMatch);
         if (!isMatch) return res.status(400).json({ message: "Current password is incorrect" });
         user.password = newPassword;
         await user.save();
