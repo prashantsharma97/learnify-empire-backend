@@ -1,6 +1,8 @@
 const User = require("../models/User");
 const { generateToken } = require("../utils/authUtils");
 const { ROLES } = require("../types/roles");
+const jwt = require("jsonwebtoken");
+
 
 const registerUser = async (req, res) => {
   const { username, email, phone, password, confirmPassword, role, tenantId } = req.body;
@@ -112,6 +114,69 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const userDetails = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id).select("-password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json({ message: "User details retrieved successfully", user });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+const updateUserDetails = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ message: "instructor not found" });
+        const { username, email, bio } = req.body;
+        let profileImage = user.profileImage;
+        if (req.file) {
+            profileImage = req.file ? req.file.path.replace(/\\/g, "/") : null;
+        }
+        user.username = username || user.username;
+        user.email = email || user.email;
+        user.bio = bio || user.bio;
+        user.profileImage = profileImage;
+        console.log("Updated profileImage:", user.profileImage); 
+        await user.save();
+
+        const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+        const userObj = user.toObject({ getters: true, virtuals: false });
+
+        if (userObj.profileImage) {
+            userObj.profileImage = `${baseUrl}/${userObj.profileImage}`;
+        }
+
+        res.json({ message: "instructor details updated successfully", user: userObj });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+const changePassword = async (req, res) => {
+    try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        const { currentPassword, newPassword } = req.body;
+        console.log("passwords:", currentPassword, newPassword);
+        const isMatch = await user.comparePassword(currentPassword);
+        console.log("isMatch:", isMatch);
+        if (!isMatch) return res.status(400).json({ message: "Current password is incorrect" });
+        user.password = newPassword;
+        await user.save();
+        res.json({ message: "Password changed successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -119,4 +184,7 @@ module.exports = {
   getAllUsers,
   updateUser,
   deleteUser,
+  updateUserDetails,
+  userDetails,
+  changePassword
 };

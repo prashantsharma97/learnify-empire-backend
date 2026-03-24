@@ -1,5 +1,5 @@
 const express = require("express");
-const { createCourse, getCourses, getCourseById, updateCourse, deleteCourse, instructorDetails, updateInstructorDetails, changePassword } = require("../controllers/instructorController/courseController");
+const { createCourse, getCourses, getCourseById, updateCourse, deleteCourse } = require("../controllers/instructorController/courseController");
 const uploadFile = require("multer-upload-helper");
 const { protect, authorize } = require("../utils/authUtils");
 // const multer = require("multer");
@@ -22,8 +22,8 @@ router.get("/get-course/:id", getCourseById);
 router.put("/update-course/:id", updateCourse);
 router.delete("/delete-course/:id", deleteCourse);
 // user details route
-router.get("/instructor-details", protect, authorize("instructor"), instructorDetails);
-router.put("/update-instructor-details", protect, authorize("instructor"), upload.single("profileImage"), updateInstructorDetails);
-router.put("/change-password", protect, authorize("instructor"), changePassword);
+// router.get("/instructor-details", protect, authorize("instructor"), instructorDetails);
+// router.put("/update-instructor-details", protect, authorize("instructor"), upload.single("profileImage"), updateInstructorDetails);
+// router.put("/change-password", protect, authorize("instructor"), changePassword);
 
 module.exports = router;
