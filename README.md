@@ -12,7 +12,7 @@ npm install
 ## 🏃 Run the Project
 
 Start the server with:
-nodemon app.js
+npm start
 
 ## ⚙️ **Environment Variables**
 

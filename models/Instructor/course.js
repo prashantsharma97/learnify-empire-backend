@@ -12,12 +12,15 @@ const courseSchema = new mongoose.Schema({
   description: { type: String, required: true },
   category: { type: String, required: true },
   difficultyLevel: { type: String, required: true },
-  thumbnail: { type: String, required: false }, 
-  lessons: [lessonSchema],  
+  thumbnail: { type: String, required: false },
+  lessons: [lessonSchema],
+  instructorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   pricingInfo: {
     coursePrice: { type: Number, required: true },
     paymentType: { type: String, enum: ['free', 'paid'], required: true }
   }
+
+
 }, { timestamps: true });
 
 const Course = mongoose.model('Course', courseSchema);
@@ -25,7 +28,7 @@ const Course = mongoose.model('Course', courseSchema);
 module.exports = Course;
 
 
-/** 
+/**
 * Paste one or more documents here
 */
 // {

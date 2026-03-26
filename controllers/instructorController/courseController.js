@@ -3,9 +3,10 @@ const User = require("../../models/User");
 const jwt = require("jsonwebtoken");
 
 const createCourse = async (req, res) => {
-    const { title, description, category, difficultyLevel, thumbnail, lessons, pricingInfo } = req.body;
+    const { instructorId, title, description, category, difficultyLevel, thumbnail, lessons, pricingInfo } = req.body;
     try {
         const newCourse = new Course({
+            instructorId,
             title,
             description,
             category,
@@ -14,6 +15,7 @@ const createCourse = async (req, res) => {
             lessons,
             pricingInfo
         });
+        console.log("New course data:", newCourse);
 
         await newCourse.save();
         res.status(201).json({ message: "Course created successfully", course: newCourse });
@@ -47,11 +49,11 @@ const getCourseById = async (req, res) => {
 const updateCourse = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, category, difficultyLevel, thumbnail, lessons, pricingInfo } = req.body;
+        const { instructorId, title, description, category, difficultyLevel, thumbnail, lessons, pricingInfo } = req.body;
 
         const course = await Course.findByIdAndUpdate(
             id,
-            { title, description, category, difficultyLevel, thumbnail, lessons, pricingInfo },
+            { instructorId, title, description, category, difficultyLevel, thumbnail, lessons, pricingInfo },
             { new: true }
         );
 
